@@ -6,6 +6,12 @@ class GameObject(object):
         self.__topleft = topleft
         self.current = current
 
+    def __get_blit_pos(self):
+        return int(round(self.x, 3)), int(round(self.y, 3))
+
+    def blit(self, window):
+        window.blit(self.current, self.__get_blit_pos())
+
     @property
     def width(self):
         return self.current.get_width()
@@ -25,6 +31,14 @@ class GameObject(object):
             self.__topleft = self.__topleft[0], pos
         elif update == "center":
             self.__topleft = pos[0] - self.width / 2, pos[1] - self.height / 2
+        elif update == "top":
+            self.__topleft = self.__topleft[0], pos
+        elif update == "bottom":
+            self.__topleft = self.__topleft[0], pos - self.height
+        elif update == "left":
+            self.__topleft = pos, self.__topleft[1]
+        elif update == "right":
+            self.__topleft = pos - self.width, self.__topleft[1]
         elif update == "topleft":
             self.__topleft = pos
 
@@ -62,12 +76,35 @@ class GameObject(object):
 
     @property
     def top(self):
-        return self.__topleft[0] + self.width / 2, self.__topleft[1] + self.height / 2
+        return self.__topleft[1]
 
     @top.setter
     def top(self, value):
         self.__update_topleft(value, "top")
 
+    @property
+    def bottom(self):
+        return self.__topleft[1] + self.height
+
+    @bottom.setter
+    def bottom(self, value):
+        self.__update_topleft(value, "bottom")
+
+    @property
+    def left(self):
+        return self.__topleft[0]
+
+    @left.setter
+    def left(self, value):
+        self.__update_topleft(value, "left")
+
+    @property
+    def right(self):
+        return self.__topleft[0] + self.width
+
+    @right.setter
+    def right(self, value):
+        self.__update_topleft(value, "right")
 
 
 
