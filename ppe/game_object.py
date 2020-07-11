@@ -3,6 +3,7 @@ import pygame
 
 class GameObject(object):
     def __init__(self, current=None, topleft=None):
+        # 123
         self.__topleft = topleft
         self.current = current
 
