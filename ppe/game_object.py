@@ -31,10 +31,34 @@ class GameObject(object):
 
         self.__move_left_keys = None
         self.__move_right_keys = None
+        self.__jump_keys = None
 
         self.__animation = None
         self.__animation_time_per_frame = None
         self.__last_animation_time = None
+
+        self.__texture = None
+        self.__texture_x_offset = None
+        self.__texture_y_offset = None
+
+    def set_texture(self, texture, x_offset=0, y_offset=0):
+        x_offset = -texture.get_width() + x_offset
+        y_offset = -texture.get_height() + y_offset
+        org_x_offset = x_offset
+        while True:
+            if x_offset < self.width:
+                self.current.blit(texture, (x_offset, y_offset))
+                x_offset += texture.get_width()
+            else:
+                x_offset = org_x_offset
+                y_offset += texture.get_height()
+
+            if y_offset >= self.height:
+                break
+
+    def __update_texture(self):
+        if self.__texture is not None and self.__texture_x_offset is not None and self.__texture_y_offset is not None:
+            self.set_texture(self.__texture, self.__texture_x_offset, self.__texture_y_offset)
 
     def init_animation(self):
         self.__animation_time_per_frame = 0.05
@@ -54,6 +78,9 @@ class GameObject(object):
             self.__animation_time_per_frame = time_per_frame
         return wrapper
 
+    def jump(self, keys=(pygame.K_UP, pygame.K_w)):
+        self.__jump_keys = keys
+
     def move_left(self, keys=(pygame.K_LEFT, pygame.K_a)):
         self.__move_left_keys = keys
 
@@ -66,7 +93,18 @@ class GameObject(object):
             if self.__y_speed > self.__max_positive_y_speed:
                 self.__y_speed = self.__max_positive_y_speed
 
-    def change_x_speed(self):
+    def check_for_jump(self):
+        jump = False
+        if type(self.__jump_keys) is int:
+            jump = True if ppe.events.pressed_keys[self.__jump_keys] else jump
+        elif self.__jump_keys is not None:
+            for jk in self.__jump_keys:
+                jump = True if ppe.events.pressed_keys[jk] else jump
+        if jump and self.__on_ground:
+            self.__on_ground = False
+            self.__y_speed = -self.__jump_power
+
+    def check_for_move(self):
         move_left = False
         move_right = False
         if type(self.__move_left_keys) is int:
@@ -100,9 +138,11 @@ class GameObject(object):
                     self.__x_speed = 0
 
     def main_speed(self, events):
+        self.check_for_move()
+        self.check_for_jump()
         self.__on_ground = False
+
         self.fall()
-        self.change_x_speed()
         self.animate()
 
     def main_pos(self):
@@ -127,6 +167,33 @@ class GameObject(object):
         self.__x_positive_deceleration = x_positive_deceleration
         self.__x_negative_deceleration = x_negative_deceleration
         self.__jump_power = jump_power
+
+    @property
+    def texture_y_offset(self):
+        return self.__texture_y_offset
+
+    @texture_y_offset.setter
+    def texture_y_offset(self, value):
+        self.__texture_y_offset = value
+        self.__update_texture()
+
+    @property
+    def texture_x_offset(self):
+        return self.__texture_x_offset
+
+    @texture_x_offset.setter
+    def texture_x_offset(self, value):
+        self.__texture_x_offset = value
+        self.__update_texture()
+
+    @property
+    def texture(self):
+        return self.__texture
+
+    @texture.setter
+    def texture(self, value):
+        self.__texture = value
+        self.__update_texture()
 
     @property
     def last_animation_time(self):
