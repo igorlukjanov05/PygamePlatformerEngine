@@ -1,5 +1,6 @@
 import pygame
 import time
+import math
 import ppe.events
 
 
@@ -42,12 +43,15 @@ class GameObject(object):
         self.__texture_y_offset = None
 
     def set_texture(self, texture, x_offset=0, y_offset=0):
-        x_offset = -texture.get_width() + x_offset
-        y_offset = -texture.get_height() + y_offset
+        self.__texture = texture
+        x_offset = -texture.get_width() + (x_offset % texture.get_width())
+        y_offset = -texture.get_height() + (y_offset % texture.get_height())
+        self.__texture_x_offset = x_offset
+        self.__texture_y_offset = y_offset
         org_x_offset = x_offset
         while True:
             if x_offset < self.width:
-                self.current.blit(texture, (x_offset, y_offset))
+                self.current.blit(texture, (int(round(x_offset, 3)), int(round(y_offset, 3))))
                 x_offset += texture.get_width()
             else:
                 x_offset = org_x_offset
